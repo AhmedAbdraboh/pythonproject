@@ -47,7 +47,7 @@ function addTab(label, bodyTemplate) {
 }
 $(function() {
     /* Open a socket */
-    chatWebSocket = new WebSocket("ws://192.168.43.172:7500/ws");
+    chatWebSocket = new WebSocket("ws://localhost:7500/ws");
     /*modal handling*/
     $formLogin = $('#login-form');
     $formLost = $('#lost-form');
