@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Chat Game</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link rel="stylesheet" href="{{ static_url("bootstrap-3.3.7/dist/css/bootstrap.min.css")}}">
+    <link rel="stylesheet" href="{{ static_url("login.css")}}">
+    <link rel="stylesheet" href="{{ static_url("chat.css")}}">
+    <link rel="stylesheet" href="{{ static_url("jquery-ui-1.12.1/jquery-ui.min.css")}}">
+    <script src="{{ static_url("jquery-3.1.1.js")}}"></script>
+    <script src="{{ static_url("bootstrap-3.3.7/dist/js/bootstrap.min.js")}}"></script>
+    <script type="text/javascript">
+        $(function() {
+            $('#modal-link').trigger('click');
+        })
+        window.alert = function() {};
+        var defaultCSS = document.getElementById('bootstrap-css');
+
+        function changeCSS(css) {
+            if (css) $('head > link').filter(':first').replaceWith('<link rel="stylesheet" href="' + css + '" type="text/css" />');
+            else $('head > link').filter(':first').replaceWith(defaultCSS);
+        }
+        /*$(document).ready(function() {
+            var iframe_height = parseInt($('html').height());
+            window.parent.postMessage(iframe_height, 'http://bootsnipp.com');
+        });*/
+    </script>
+    <script src="{{ static_url("jquery-ui-1.12.1/jquery-ui.min.js")}}"></script>
+    <script src="{{ static_url("login.js")}}"></script>
+    <script src="{{ static_url("chat.js")}}"></script>
+    <style media="screen">
+      #dialog label, #dialog input { display:block; }
+      #dialog label { margin-top: 0.5em; }
+      #dialog input, #dialog textarea { width: 95%; }
+      #tabs { margin-top: 1em; }
+      #tabs li .ui-icon-close { float: left; margin: 0.4em 0.2em 0 0; cursor: pointer; }
+      #add_tab { cursor: pointer; }
+    </style>
+</head>
+
+<body>
+    <!-- BEGIN # BOOTSNIP INFO -->
+    <div class="container" style="display: none;">
+        <div class="row">
+            <div class="col-xs-12">
+                <h1 class="text-center">Modal Login with jQuery Effects</h1>
+                <p class="text-center">
+                    <a id="modal-link" href="#" class="btn btn-primary btn-lg" role="button" data-toggle="modal" data-target="#login-modal">Open Login Modal</a>
+                </p>
+            </div>
+        </div>
+    </div>
+    <!-- END # BOOTSNIP INFO -->
+
+    <!-- BEGIN # MODAL LOGIN -->
+    <div class="modal fade" id="login-modal" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header" align="center">
+                    <img class="img-rounded" id="img_logo" src="{{ static_url("logo.png")}}">
+                    <button id="closeButton" style="display: none;" type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                    </button>
+                </div>
+
+                <!-- Begin # DIV Form -->
+                <div id="div-forms">
+
+                    <!-- Begin # Login Form -->
+                    <form id="login-form">
+                        <div class="modal-body">
+                            <div id="div-login-msg">
+                                <div id="icon-login-msg" class="glyphicon glyphicon-chevron-right"></div>
+                                <span id="text-login-msg">Type your username and password.</span>
+                            </div>
+                            <input id="login_username" class="form-control" type="text" placeholder="Username (type ERROR for error effect)" required="">
+                            <input id="login_password" class="form-control" type="password" placeholder="Password" required="">
+                            <!-- <div class="checkbox">
+                                <label>
+                                    <input type="checkbox"> Remember me
+                                </label>
+                            </div> -->
+                        </div>
+                        <div class="modal-footer">
+                            <div>
+                                <button type="submit" class="btn btn-primary btn-lg btn-block">Login</button>
+                            </div>
+                            <div>
+                                <button id="login_lost_btn" type="button" class="btn btn-link">Lost Password?</button>
+                                <button id="login_register_btn" type="button" class="btn btn-link">Register</button>
+                            </div>
+                        </div>
+                    </form>
+                    <!-- End # Login Form -->
+
+                    <!-- Begin | Lost Password Form -->
+                    <form id="lost-form" style="display:none;">
+                        <div class="modal-body">
+                            <div id="div-lost-msg">
+                                <div id="icon-lost-msg" class="glyphicon glyphicon-chevron-right"></div>
+                                <span id="text-lost-msg">Type your e-mail.</span>
+                            </div>
+                            <input id="lost_email" class="form-control" type="text" placeholder="E-Mail (type ERROR for error effect)" required="">
+                        </div>
+                        <div class="modal-footer">
+                            <div>
+                                <button type="submit" class="btn btn-primary btn-lg btn-block">Send</button>
+                            </div>
+                            <div>
+                                <button id="lost_login_btn" type="button" class="btn btn-link">Log In</button>
+                                <button id="lost_register_btn" type="button" class="btn btn-link">Register</button>
+                            </div>
+                        </div>
+                    </form>
+                    <!-- End | Lost Password Form -->
+
+                    <!-- Begin | Register Form -->
+                    <form id="register-form" style="display:none;">
+                        <div class="modal-body">
+                            <div id="div-register-msg">
+                                <div id="icon-register-msg" class="glyphicon glyphicon-chevron-right"></div>
+                                <span id="text-register-msg">Register an account.</span>
+                            </div>
+                            <input id="register_username" class="form-control" type="text" placeholder="Username (type ERROR for error effect)" required="">
+                            <!-- <input id="register_email" class="form-control" type="text" placeholder="E-Mail" required=""> -->
+                            <input id="register_password" class="form-control" type="password" placeholder="Password" required="">
+                        </div>
+                        <div class="modal-footer">
+                            <div>
+                                <button type="submit" class="btn btn-primary btn-lg btn-block">Register</button>
+                            </div>
+                            <div>
+                                <button id="register_login_btn" type="button" class="btn btn-link">Log In</button>
+                                <button id="register_lost_btn" type="button" class="btn btn-link">Lost Password?</button>
+                            </div>
+                        </div>
+                    </form>
+                    <!-- End | Register Form -->
+
+                </div>
+                <!-- End # DIV Form -->
+
+            </div>
+        </div>
+    </div>
+    <!-- END # MODAL LOGIN -->
+
+    <!--  BEGIN # CONTAINER -->
+    <div class="container" style="min-height: 500px; margin-top: 5vh; border-radius: 10px;">
+        <!-- BEGIN # NAVBAR -->
+        <div class="row" style="border-radius: 5px;">
+            <nav class="navbar navbar-default col-sm-8 col-sm-push-2">
+                <div class="container-fluid">
+                    <!-- Brand and toggle get grouped for better mobile display -->
+                    <div class="navbar-header">
+                        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navigation-links" aria-expanded="false">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                      </button>
+                        <a class="navbar-brand" href="#"><span><img height="100%" src="{{ static_url("logo.png")}}" alt="Chat Game"></span></a>
+                    </div>
+
+                    <!-- Collect the nav links, forms, and other content for toggling -->
+                    <div class="collapse navbar-collapse" id="navigation-links">
+                        <ul class="nav navbar-nav">
+                            <li class="active"><a href="#">Home</a></li>
+                            <li><a href="#">Groups</a></li>
+                            <li><a href="#">People</a></li>
+                            <li id="chatsButton"><a href="#">Chats<span class="sr-only">(current)</span></a></li>
+                            <!-- <li class="dropdown">
+                          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Dropdown <span class="caret"></span></a>
+                          <ul class="dropdown-menu">
+                            <li><a href="#">Action</a></li>
+                            <li><a href="#">Another action</a></li>
+                            <li><a href="#">Something else here</a></li>
+                            <li role="separator" class="divider"></li>
+                            <li><a href="#">Separated link</a></li>
+                            <li role="separator" class="divider"></li>
+                            <li><a href="#">One more separated link</a></li>
+                          </ul>
+                        </li> -->
+                        </ul>
+                        <ul class="nav navbar-nav navbar-right">
+                            <li><a href="#">Log out</a></li>
+                        </ul>
+                    </div>
+                    <!-- /.navbar-collapse -->
+                </div>
+                <!-- /.container-fluid -->
+            </nav>
+        </div>
+        <!--  END # NAVBAR -->
+        <!--  BEGIN # CONTENT-->
+        <div id="chat-windows-container" class="row my-hidden-class" style="max-height: 300px;">
+            <div class="col-sm-8 col-sm-push-2">
+                <div id="tabs">
+                    <ul>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div id="people-container" class="row my-hidden-class" style="min-height: 400px;">
+          <div class="col-sm-8 col-sm-push-2" style="border: 1px solid grey; border-radius: 5px; height: 450px;">
+              <div class="row">
+                <div class="col-sm-10 col-sm-push-1">
+                  <h3>People</h3>
+                </div>
+              </div>
+              <hr>
+              <div class="row">
+                <div class="col-sm-10 col-sm-push-1">
+                  <h4>My Friends</h4>
+                </div>
+              </div>
+              <div class="row align-content-bottom">
+                <div class="col-sm-10 col-sm-push-1">
+                  <div id="friendsPanel" class="panel panel-default" style="overflow-y: scroll; height: 100px;;">
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-sm-10 col-sm-push-1">
+                  <h4>All Users</h4>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-sm-10 col-sm-push-1">
+                  <div id="otherPeoplePanel" class="panel panel-default" style="overflow-y: scroll; height: 100px;">
+                </div>
+              </div>
+              </div>
+          </div>
+        </div>
+        <div id="groups-container" class="row my-hidden-class" style="min-height: 400px;">
+          <div class="col-sm-8 col-sm-push-2" style="border: 1px solid grey; border-radius: 5px; height: 450px;">
+              <div class="row">
+                <div class="col-sm-10 col-sm-push-1">
+                  <h3>Groups</h3>
+                </div>
+              </div>
+              <hr>
+              <div class="row">
+                <div class="col-sm-10 col-sm-push-1">
+                  <h4>My Groups</h4>
+                </div>
+              </div>
+              <div class="row align-content-bottom">
+                <div class="col-sm-8 col-sm-push-1">
+                  <div id="groupsPanel" class="panel panel-default" style="overflow-y: scroll; height: 100px;;">
+                  </div>
+                </div>
+                <div class="col-sm-2 col-sm-push-1 btn btn-danger">Leave Group</div>
+              </div>
+              <div class="row">
+                <div class="col-sm-10 col-sm-push-1">
+                  <h4>All Groups</h4>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-sm-10 col-sm-push-1">
+                  <div id="othergroupsPanel" class="panel panel-default" style="overflow-y: scroll; height: 100px;">
+                </div>
+              </div>
+              </div>
+          </div>
+        </div>
+        <div id="home-container" class="row" style="min-height: 400px;">
+            <div class="col-sm-8 col-sm-push-2" style="border: 1px solid grey; border-radius: 5px; height: 450px;">
+              <div class="row">
+                <div class="col-sm-10 col-sm-push-1">
+                  <h3>Game Leaderboard</h3>
+                </div>
+              </div>
+              <hr>
+              <div class="row">
+                <div style="text-align: center;" class="col-sm-3 ">
+                  <h4>Public Figure</h4>
+                  <img height="115px" class="img img-circle" src="{{ static_url("publicfigure.png")}}" alt="">
+                  <h3 id="publicFigureHeading" ></h3>
+                </div>
+                <div style="text-align: center;" class="col-sm-3 ">
+                  <h4>Chatty One</h4>
+                  <img height="115px" class="img img-circle" src="{{ static_url("chattyone.png")}}" alt="">
+                  <h3 id="chattyOneHeading" ></h3>
+                </div>
+                <div style="text-align: center;" class="col-sm-3 ">
+                  <h4>Super Friend</h4>
+                  <img height="115px" class="img img-circle" src="{{ static_url("superfriend.png")}}" alt="">
+                  <h3 id="superFriendHeading" ></h3>
+                </div>
+                <div style="text-align: center;" class="col-sm-3 ">
+                  <h4>Party Man</h4>
+                  <img height="115px" class="img img-circle" src="{{ static_url("partyman.jpg")}}" alt="">
+                  <h3 id="partyManHeading" ></h3>
+                </div>
+              </div>
+            </div>
+        </div>
+        <!--  END # CONTENT-->
+    </div>
+    <!--  END # CONTAINER -->
+</body>
+
+</html>

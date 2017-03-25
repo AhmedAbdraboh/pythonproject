@@ -1,0 +1,6 @@
+::-webkit-scrollbar {
+    width: 0;  /* remove scrollbar space */
+}
+.my-hidden-class {
+    display: none;
+}
