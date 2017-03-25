@@ -66,7 +66,7 @@ class Database:
 # /******************************* group ********************************/
 
     # registration // insert into name pass
-    def creatGroup(self,group_name, creator_name, imag):
+    def creatGroup(self,group_name, creator_name, imag=""):
         try:
             cursor.execute("INSERT INTO groups set gr_name=%s, creator_name=%s, image=%s", (group_name, creator_name,imag))
             conn.commit();
@@ -83,7 +83,9 @@ class Database:
             conn.commit();
         except Exception as e:
             print(str(e));
-            conn.rollback();
+            conn.rollback()
+            return False
+        return True
     # select user groups
     def selectUserGroups(self,u_name):
         cursor.execute( "SELECT group_name FROM members where user_name = %s",(u_name) );

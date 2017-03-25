@@ -1,0 +1,35 @@
+
+							python project
+
+1- Team members
+
+	1- Ahmed Abdrabu
+	2- Mohamed Foda
+	3- Amira Elkholy
+	4- Atta Ahmed
+
+==============================
+
+2- Roles
+
+ Server side ==> Ahmed Abdrabu
+ Client side ==> Mohammed Foda
+ DataBase ==> Atta Ahmed
+ GUI+Templet ==> Amira Elkholy
+
+================================
+
+3- Instruction to run the App
+
+	1- In database.py edit   host,user , password , db  we are using mysql database
+	2- import chatGame.sql into mysql
+	3- Start the server
+	4- In browser run the following url ==> host:7500
+	5- Login with one of this users  (ahmed,iti)(foda,iti)(atta,iti)(amira,iti)
+	6- To join group clicked on any groups not in your group list
+  7- To add friend click on any user not in your friend list
+  8- To privet chat with friend click on from group chat
+  9- To start privet chatting direct not handled yet
+  10 - To leave group not handled yet
+  11- to remove friend not hanled yet
+================================

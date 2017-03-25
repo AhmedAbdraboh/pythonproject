@@ -14,6 +14,7 @@ function msgChange($divTag, $iconTag, $textTag, $divClass, $iconClass, $msgText)
     }, $msgShowTime);
 }
 
+myUserName = "";
 function modalAnimate($oldForm, $newForm) {
     var $oldH = $oldForm.height();
     var $newH = $newForm.height();
@@ -46,7 +47,7 @@ function addTab(label, bodyTemplate) {
 }
 $(function() {
     /* Open a socket */
-    chatWebSocket = new WebSocket("ws://10.140.200.169:7500/ws");
+    chatWebSocket = new WebSocket("ws://192.168.43.172:7500/ws");
     /*modal handling*/
     $formLogin = $('#login-form');
     $formLost = $('#lost-form');
@@ -74,32 +75,43 @@ $(function() {
                          "message": $(clickedItem).parent().prev().children(':eq(0)').val(),
                         }
         }
-        console.log(chatMessage);
+        //console.log(chatMessage);
         chatWebSocket.send(JSON.stringify(chatMessage))
       }
       if ($(clickedItem).parent().hasClass('userListClass')) {
-        singleChatTemplate = '<div class="row"><div class="col-sm-12"><div class="panel panel-default" style="text-align: left; height: 300px; overflow-y: scroll"><div class="panel-body"></div></div></div></div><div class="row"><div class="col-sm-10"><textarea class="form-control" rows="2" style="border-radius: 5px;"></textarea></div><div class="col-sm-2"><div id="' + $(event.target).text() + '" class="private-chat-class btn btn-success btn-large" style="border-radius: 5px;">Send</div></div></div>'
+        singleChatTemplate = '<div class="row"><div class="col-sm-12"><div id="' + $(event.target).text() + '" class="panel panel-default" style="text-align: left; height: 300px; overflow-y: scroll"><div class="panel-body"></div></div></div></div><div class="row"><div class="col-sm-10"><textarea class="form-control" rows="2" style="border-radius: 5px;"></textarea></div><div class="col-sm-2"><div id="' + $(event.target).text() + '" class="private-chat-class btn btn-success btn-large" style="border-radius: 5px;">Send</div></div></div>'
         addTab($(event.target).text(), singleChatTemplate);
       }
     });
     $('#groupsPanel').on('click', 'img', function(event) {
-      console.log($(event.target).next().next().text());
+      //console.log($(event.target).next().next().text());
       chatRoomRequest = {"type": "chatWithGroup", "groupName": $(event.target).next().next().text()}
       chatWebSocket.send(JSON.stringify(chatRoomRequest));
+    });
+    $('#othergroupsPanel').on('click', 'img', function(event) {
+      //console.log($(event.target).next().next().text());
+      joinGroupRequest = {"type": "joinGroup", "groupName": $(event.target).next().next().text()}
+      chatWebSocket.send(JSON.stringify(joinGroupRequest));
+    });
+    $('#otherPeoplePanel').on('click', 'img', function(event) {
+      //console.log($(event.target).next().next().text());
+      friendRequest = {"type": "friendRequest", "friendName": $(event.target).next().next().text()}
+      //console.log(friendRequest);
+      chatWebSocket.send(JSON.stringify(friendRequest));
     });
     $('form').submit(function() {
         switch (this.id) {
             case 'login-form':
-                var $lg_username = $('#login_username').val();
-                var $lg_password = $('#login_password').val();
+                $lg_username = $('#login_username').val();
+                $lg_password = $('#login_password').val();
                 loginRequest = {"type": "login", "userName": $lg_username, "password": $lg_password}
-                console.log(loginRequest);
+                //console.log(loginRequest);
                 chatWebSocket.send(JSON.stringify(loginRequest));
                 // if ($lg_username == 'ERROR') {} else {}
                 return false;
                 break;
             case 'lost-form':
-                var $ls_email = $('#lost_email').val();
+                $ls_email = $('#lost_email').val();
                 if ($ls_email == 'ERROR') {
                     msgChange($('#div-lost-msg'), $('#icon-lost-msg'), $('#text-lost-msg'), 'error', 'glyphicon-remove', 'Send error');
                 } else {
@@ -112,7 +124,7 @@ $(function() {
                 // var $rg_email = $('#register_email').val();
                 var $rg_password = $('#register_password').val();
                 registerationRequest = {"type": "register", "userName": $rg_username, "password": $rg_password}
-                console.log(registerationRequest);
+                // console.log(registerationRequest);
                 chatWebSocket.send(JSON.stringify(registerationRequest));
                 // if ($rg_username == 'ERROR') {
                 //     msgChange($('#div-register-msg'), $('#icon-register-msg'), $('#text-register-msg'), 'error', 'glyphicon-remove', 'Register error');
@@ -148,15 +160,39 @@ $(function() {
         // window.close();
         // $('#login-modal').modal('hide');
     });
+    $('#createGroupButton').on('click', function(){
+      swal({
+        title: "Create Group",
+        text: "Write Group Name:",
+        type: "input",
+        showCancelButton: true,
+        closeOnConfirm: true,
+        animation: "slide-from-top",
+        inputPlaceholder: "Write something"
+      },
+      function(inputValue){
+        if (inputValue === false) return false;
+
+        if (inputValue === "") {
+          swal.showInputError("You need to write something!");
+          return false
+        }
+        createGroupRequest = {"type":"createGroup", "groupName":inputValue};
+        // console.log(createGroupRequest);
+        chatWebSocket.send(JSON.stringify(createGroupRequest));
+        setTimeout(function(){$('li.active:eq(0)').trigger('click');}, 250);
+      });
+    })
     /* Listen to server messages*/
     chatWebSocket.onmessage=function(e){
       serverMessage = JSON.parse(e.data);
-      console.log(serverMessage);
+      // console.log(serverMessage);
       switch (serverMessage.type) {
         case 'authentication':
           if (serverMessage.status == 'success') {
             msgChange($('#div-login-msg'), $('#icon-login-msg'), $('#text-login-msg'), 'success', 'glyphicon-ok', 'Logged In');
             setTimeout(function(){$('#closeButton').trigger('click')}, 1500)
+            myUserName = $lg_username;
           } else {
             msgChange($('#div-login-msg'), $('#icon-login-msg'), $('#text-login-msg'), 'error', 'glyphicon-remove', 'Login error');
           }
@@ -199,15 +235,52 @@ $(function() {
           }
           break
         case 'groupChatStart':
-          groupChatTemplate = '<div class="row"><div class="col-sm-9"><div class="panel panel-default" style="text-align: left; height: 300px; overflow-y: scroll"><div class="panel-body"></div></div></div><div class="col-sm-3"><div class="panel panel-default" style="text-align: left; height: 300px; overflow-y:scroll"><div class="panel-body"><ul class="userListClass" style="list-style-type: none; padding-left: 0;"></ul></div></div></div></div><div class="row"><div class="col-sm-10"><textarea class="form-control" rows="2" style="border-radius: 5px;"></textarea></div><div class="col-sm-2"><div id="' + chatRoomRequest.groupName + '" class=" group-chat-class btn btn-success btn-large" style="border-radius: 5px;">Send</div></div></div>'
+          groupChatTemplate = '<div class="row"><div class="col-sm-9"><div id="' + chatRoomRequest.groupName + '" class="panel panel-default" style="text-align: left; height: 300px; overflow-y: scroll"><div class="panel-body"></div></div></div><div class="col-sm-3"><div class="panel panel-default" style="text-align: left; height: 300px; overflow-y:scroll"><div class="panel-body"><ul id="' + chatRoomRequest.groupName + '" class="userListClass" style="list-style-type: none; padding-left: 0;"></ul></div></div></div></div><div class="row"><div class="col-sm-10"><textarea class="form-control" rows="2" style="border-radius: 5px;"></textarea></div><div class="col-sm-2"><div id="' + chatRoomRequest.groupName + '" class=" group-chat-class btn btn-success btn-large" style="border-radius: 5px;">Send</div></div></div>'
           $('#chatsButton').trigger('click')
           addTab(chatRoomRequest.groupName, groupChatTemplate)
           $('#tabs a:last').trigger('click')
           for (var i = 0; i < serverMessage.onlineGroupMembers.length; i++) {
+            if (serverMessage.onlineGroupMembers[i] == myUserName) {
+              continue;
+            }
             newLI = '<li>' + serverMessage.onlineGroupMembers[i] + '</li>'
             $('#tabs ul:last').append(newLI);
           }
           $('#chatsButton').addClass('active').siblings().removeClass('active');
+          break
+        case 'groupChatMessage':
+          $('#' + serverMessage.groupName).filter('.panel').append('<span>' + serverMessage.sender + ': ' + serverMessage.message + '</span><br/>')
+          break
+        case 'privateChatMessage':
+          if (serverMessage.sender == myUserName ) {
+            // console.log('if');
+            $('#' + serverMessage.receiver).filter('.panel').append('<span>' + serverMessage.sender + ': ' + serverMessage.message + '</span><br/>');
+          } else {
+            // console.log('else');
+            $('#' + serverMessage.sender ).filter('.panel').append('<span>' + serverMessage.sender + ': ' + serverMessage.message + '</span><br/>')
+          }
+          break
+        case 'userSignedIn':
+          for (var i = 0; i < serverMessage.userGroups.length; i++) {
+            $('ul').filter('#' + serverMessage.userGroups[i]).append('<li>' + serverMessage.userName + '</li>')
+          }
+          break
+        case 'userSignedOut':
+          $('li:contains("' + serverMessage.userName + '")').remove();
+          break
+        case 'joinGroupReply':
+          if (serverMessage.status == "success") {
+            $('div > span:contains("' + serverMessage.groupName + '")').parent().remove();
+            groupIcon = '<div style="text-align: center;display: inline-block"><img height="75px" class="img img-circle" src="static/chatGroup.png")}}"><br><span>'+ serverMessage.groupName +'</span></div>'
+            $('#groupsPanel').append(groupIcon);
+          }
+          break
+        case 'friendRequestReply':
+          if (serverMessage.status == "success") {
+            $('div > span:contains("' + serverMessage.friendName + '")').parent().remove();
+            friendIcon = '<div style="text-align: center;display: inline-block"><img height="75px" class="img img-circle" src="static/friend.png")}}"><br><span>'+ serverMessage.friendName +'</span></div>'
+            $('#friendsPanel').append(friendIcon);
+          }
           break
       }
     }
@@ -234,12 +307,12 @@ $(function() {
         } else if (clickedNavLinkText.startsWith('Groups')) {
             $('#groups-container').removeClass('my-hidden-class').siblings(':not(:eq(0))').addClass('my-hidden-class');
             groupsRequest = {"type": "requestGroups"};
-            console.log(groupsRequest);
+            // console.log(groupsRequest);
             chatWebSocket.send(JSON.stringify(groupsRequest));
         } else if (clickedNavLinkText.startsWith('People')) {
             $('#people-container').removeClass('my-hidden-class').siblings(':not(:eq(0))').addClass('my-hidden-class');
             peopleRequest = {"type": "requestPeople"};
-            console.log(peopleRequest);
+            // console.log(peopleRequest);
             chatWebSocket.send(JSON.stringify(peopleRequest));
         } else if (clickedNavLinkText.startsWith('Chats')) {
             $('#chat-windows-container').removeClass('my-hidden-class').siblings(':not(:eq(0))').addClass('my-hidden-class');

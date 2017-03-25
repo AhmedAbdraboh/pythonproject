@@ -32,6 +32,12 @@ class WSHandler(websocket.WebSocketHandler):
                 self.write_message(json.dumps(WSHandler.message))
                 WSHandler.sendAllData()
                 self.write_message(json.dumps(WSHandler.message))
+                WSHandler.message.clear()
+                WSHandler.message["type"]='userSignedIn'
+                WSHandler.message["userGroups"]=dbh.selectUserGroups(userName)
+                WSHandler.message["userName"]=userName
+                for onlineUser in WSHandler.onlineUsers:
+                    onlineUser.write_message(json.dumps(WSHandler.message))
             else:
                 WSHandler.message['type']='authentication'
                 WSHandler.message['status']='failure'
@@ -42,7 +48,6 @@ class WSHandler(websocket.WebSocketHandler):
             password=receivedMessage['password']
             result = dbh.insertUser(userName,password)
             if result:
-                # clients.append(self)
                 WSHandler.message["type"]='registration'
                 WSHandler.message["status"]='success'
                 self.write_message(json.dumps(WSHandler.message))
@@ -53,9 +58,11 @@ class WSHandler(websocket.WebSocketHandler):
         if code == "requestGroups":
             WSHandler.getMyGroups(self.userName)
             self.write_message(json.dumps(WSHandler.message))
+        # Handling People tab
         if code == "requestPeople":
             WSHandler.getMyFriends(self.userName)
             self.write_message(json.dumps(WSHandler.message))
+        # Handling Request Group tab
         if code == "chatWithGroup":
             groupName=receivedMessage['groupName']
             onlineGroupMembers = WSHandler.selectOnlineGroupMembers(groupName)
@@ -63,6 +70,8 @@ class WSHandler(websocket.WebSocketHandler):
             WSHandler.message["onlineGroupMembers"]=onlineGroupMembers
             WSHandler.message["type"]='groupChatStart'
             self.write_message(json.dumps(WSHandler.message))
+
+        # Handling group Message
         if code == "groupChatMessage":
             groupName=receivedMessage['groupName']
             WSHandler.message.clear()
@@ -70,47 +79,88 @@ class WSHandler(websocket.WebSocketHandler):
             WSHandler.message["message"]=receivedMessage['message']
             WSHandler.message["groupName"]=groupName
             WSHandler.message["sender"]=self.userName
+            dbh.incrementMessages(sender) #increase chatty
             onlineGroupMembersObjects=WSHandler.selectOnlineGroupMembersObjects(groupName)
             for onlineGroupMembersObject in onlineGroupMembersObjects:
                 onlineGroupMembersObject.write_message(json.dumps(WSHandler.message))
-        # I am here, body continue to write group chat message
+        # Handling Private Message
         if code == "privateChatMessage":
             receiver=receivedMessage['receiver']
             sender=self.userName
+            dbh.incrementMessages(sender) #increase chatty
             message=receivedMessage['message']
             WSHandler.sendPrivateMessage(sender,receiver,message)
+        # Handling Group Join Request
+        if code == "joinGroup":
+            userName = self.userName
+            groupName = receivedMessage["groupName"]
+            result = dbh.joinToGroup(userName,groupName)
+            if result:
+                WSHandler.message.clear()
+                WSHandler.message["type"]="joinGroupReply"
+                WSHandler.message["groupName"]=groupName
+                WSHandler.message["status"]="success"
+                self.write_message(json.dumps(WSHandler.message))
+            else:
+                WSHandler.message.clear()
+                WSHandler.message["type"]="joinGroupReply"
+                WSHandler.message["groupName"]=groupName
+                WSHandler.message["status"]="failure"
+                self.write_message(json.dumps(WSHandler.message))
+        if code == "leaveGroup":
+            userName = self.userName
+            groupName = receivedMessage["groupName"]
+            result = dbh.leaveGroup(userName,groupName)
+            if result:
+                WSHandler.message.clear()
+                WSHandler.message["type"]="leaveGroupReply"
+                WSHandler.message["groupName"]=groupName
+                WSHandler.message["status"]="success"
+                self.write_message(json.dumps(WSHandler.message))
+            else:
+                WSHandler.message.clear()
+                WSHandler.message["type"]="leaveGroupReply"
+                WSHandler.message["groupName"]=groupName
+                WSHandler.message["status"]="failure"
+                self.write_message(json.dumps(WSHandler.message))
+        if code == "createGroup":
+            creatorName = self.userName
+            groupName = receivedMessage["groupName"]
+            result = dbh.creatGroup(groupName,creatorName)
+            if result:
+                dbh.joinToGroup(creatorName,groupName)
+                WSHandler.message.clear()
+                WSHandler.message["type"]="createGroupReply"
+                WSHandler.message["groupName"]=groupName
+                WSHandler.message["status"]="success"
+                self.write_message(json.dumps(WSHandler.message))
+            else:
+                WSHandler.message.clear()
+                WSHandler.message["type"]="createGroupReply"
+                WSHandler.message["groupName"]=groupName
+                WSHandler.message["status"]="failure"
+                self.write_message(json.dumps(WSHandler.message))
+        if code == "friendRequest":
+            senderName = self.userName
+            friendName = receivedMessage["friendName"]
+            dbh.sendFriendRequest(senderName,friendName)
+            dbh.acceptFriendRequest(friendName,senderName)
+            WSHandler.message.clear()
+            WSHandler.message["type"]="friendRequestReply"
+            WSHandler.message["status"]="success"
+            WSHandler.message["friendName"]=friendName
+            self.write_message(json.dumps(WSHandler.message))
 
-        if code == "0":
-            for client in clients:
-                if client is self:
-                    # print(receivedMessage[1])
-                    client.name=receivedMessage[1]
-            online=[]
-            for client in clients:
-                online.append(client.name)
-
-
-            onlinedict={}
-            onlinedict["code"]=2
-            onlinedict["list"]=online
-
-            for client in clients:
-                # if client is not self:
-
-                client.write_message(json.dumps(onlinedict))
-        if code == "1":
-            for client in clients:
-                client.write_message(json.dumps(self.name+": "+receivedMessage[1]))
-        if code == "2":
-            targetPerson=receivedMessage[2]
-            for client in clients:
-                if client.name==targetPerson:
-                    client.write_message(json.dumps("PrivateMessage: "+self.name+": "+receivedMessage[1]))
 
     def on_close(self):
+        userName=self.userName
         WSHandler.onlineUsers.remove(self)
-        # onlineClients.remove(self.name)
-        pass
+        WSHandler.message.clear()
+        WSHandler.message["type"]='userSignedOut'
+        WSHandler.message["userName"]=userName
+        for onlineUser in WSHandler.onlineUsers:
+            onlineUser.write_message(json.dumps(WSHandler.message))
+
     @staticmethod
     def sendAllData():
         WSHandler.message.clear()
