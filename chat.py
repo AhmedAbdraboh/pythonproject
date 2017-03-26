@@ -79,7 +79,7 @@ class WSHandler(websocket.WebSocketHandler):
             WSHandler.message["message"]=receivedMessage['message']
             WSHandler.message["groupName"]=groupName
             WSHandler.message["sender"]=self.userName
-            dbh.incrementMessages(sender) #increase chatty
+            dbh.incrementMessages(self.userName) #increase chatty
             onlineGroupMembersObjects=WSHandler.selectOnlineGroupMembersObjects(groupName)
             for onlineGroupMembersObject in onlineGroupMembersObjects:
                 onlineGroupMembersObject.write_message(json.dumps(WSHandler.message))
